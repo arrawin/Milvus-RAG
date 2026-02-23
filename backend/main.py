@@ -67,7 +67,6 @@ def query(payload: QueryRequest, db: Session = Depends(get_db)):
                 SELECT chunk_id, chunk_text
                 FROM policy_chunks
                 WHERE chunk_id = ANY(:ids)
-                AND jurisdiction = :jurisdiction
             """),
             {"ids": chunk_ids, "jurisdiction": jurisdiction}
         )
