@@ -1,13 +1,40 @@
+import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
+from dotenv import load_dotenv
+from pymilvus import connections
+
 from database import SessionLocal
 from embedding_model import embed
 from milvus_service import search
 from llm_service import generate_answer
 
-app = FastAPI()
+load_dotenv()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 🔹 Connect to Milvus at startup
+    connections.connect(
+        alias="default",
+        uri=os.getenv("MILVUS_URI"),
+        token=os.getenv("MILVUS_TOKEN")
+    )
+    print("Milvus connected.")
+
+    yield
+
+    # 🔹 Disconnect on shutdown
+    connections.disconnect("default")
+    print("Milvus disconnected.")
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -30,6 +57,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
 
 @app.get("/")
 def root():

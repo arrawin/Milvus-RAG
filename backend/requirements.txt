@@ -1,5 +1,9 @@
 fastapi
 uvicorn
+sqlalchemy
 psycopg2-binary
 requests
+pymilvus
+sentence-transformers
+torch
 python-dotenv
